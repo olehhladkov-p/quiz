@@ -72,7 +72,7 @@ export default {
     }
   },
   created() {
-    this.setCategories()
+    this.getCategories()
   },
   computed: {
     ...mapGetters([
@@ -117,10 +117,10 @@ export default {
     ...mapActions([
       'setQuizStarted',
       'setCategoryId',
-      'setCategories',
+      'getCategories',
       'setDifficultyLevel',
       'setQuestionsAmount',
-      'setMaxQuestionsAmount'
+      'getMaxQuestionsAmount'
     ]),
     onFormChange(e) {
       const targetName = e.target.name
@@ -130,7 +130,7 @@ export default {
         this.difficulty &&
         targetName !== 'questions_amount'
       ) {
-        this.setMaxQuestionsAmount()
+        this.getMaxQuestionsAmount()
       }
     },
     onFormSubmit() {
@@ -180,10 +180,6 @@ export default {
   border: 1px solid #ccc;
   border-radius: 0.5rem;
   background-color: #fff;
-}
-
-.quiz-form select option {
-  text-transform: capitalize;
 }
 
 .quiz-form .btn {
