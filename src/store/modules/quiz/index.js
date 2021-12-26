@@ -1,6 +1,8 @@
 import {
   SET_PROCESSING,
   SET_QUIZ_STARTED,
+  INCREMENT_STEP,
+  DECREMENT_STEP,
   SET_CATEGORY_ID,
   GET_CATEGORIES,
   SET_DIFFICULTY_LEVEL,
@@ -16,11 +18,13 @@ import { replaceUrlParams } from '@/utils'
 export default {
   state: {
     quizStarted: false,
+    step: 1,
     categoryId: '',
     categories: [],
     difficultyLevel: '',
     difficultyLevelList: ['Easy', 'Medium', 'Hard'],
     questions: [],
+    question: {},
     questionsAmount: null,
     maxQuestionsAmount: null,
     answers: {
@@ -31,11 +35,13 @@ export default {
 
   getters: {
     quizStarted: ({ quizStarted }) => quizStarted,
+    step: ({ step }) => step,
     categoryId: ({ categoryId }) => categoryId,
     categories: ({ categories }) => categories,
     difficultyLevel: ({ difficultyLevel }) => difficultyLevel,
     difficultyLevelList: ({ difficultyLevelList }) => difficultyLevelList,
     questions: ({ questions }) => questions,
+    question: ({ questions, step }) => questions[step - 1],
     questionsAmount: ({ questionsAmount }) => questionsAmount,
     maxQuestionsAmount: ({ maxQuestionsAmount }) => maxQuestionsAmount,
     answersTotal: ({ answers: { correct, incorrect } }) => correct + incorrect,
@@ -46,6 +52,12 @@ export default {
   mutations: {
     [SET_QUIZ_STARTED](state) {
       state.quizStarted = true
+    },
+    [INCREMENT_STEP](state) {
+      state.step += 1
+    },
+    [DECREMENT_STEP](state) {
+      state.step -= 1
     },
     [SET_CATEGORY_ID](state, payload) {
       state.categoryId = payload
@@ -82,6 +94,12 @@ export default {
         })
       })
     },
+    incrementStep({ commit }) {
+      commit(INCREMENT_STEP)
+    },
+    decrementStep({ commit }) {
+      commit(DECREMENT_STEP)
+    },
     setCategoryId({ commit }, payload) {
       commit(SET_CATEGORY_ID, payload)
     },
@@ -112,7 +130,16 @@ export default {
 
         return fetch(url)
           .then(response => response.json())
-          .then(({ results: questions }) => {
+          .then(({ results }) => {
+            const questions = results.map(item => {
+              const answers = [item.correct_answer, ...item.incorrect_answers]
+
+              return {
+                ...item,
+                answers
+              }
+            })
+
             commit(GET_QUESTIONS, questions)
             resolve()
           })

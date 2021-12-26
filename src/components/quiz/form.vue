@@ -77,9 +77,9 @@ export default {
   computed: {
     ...mapGetters([
       'processing',
+      'step',
       'categoryId',
       'categories',
-      'questions',
       'difficultyLevel',
       'difficultyLevelList',
       'questionsAmount',
@@ -134,7 +134,9 @@ export default {
       }
     },
     onFormSubmit() {
-      this.startQuiz()
+      this.startQuiz().then(() => {
+        this.$router.push({ name: 'quiz-question', params: { id: this.step } })
+      })
     }
   }
 }
