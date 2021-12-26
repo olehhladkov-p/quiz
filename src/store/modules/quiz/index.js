@@ -4,11 +4,14 @@ import {
   SET_CATEGORY_ID,
   GET_CATEGORIES,
   SET_DIFFICULTY_LEVEL,
+  GET_QUESTIONS,
   SET_QUESTIONS_AMOUNT,
   GET_MAX_QUESTIONS_AMOUNT,
   INCREASE_CORRECT_ANSWERS_AMOUNT,
   INCREASE_INCORRECT_ANSWERS_AMOUNT
 } from '@/store/constants'
+
+import { replaceUrlParams } from '@/utils'
 
 export default {
   state: {
@@ -17,6 +20,7 @@ export default {
     categories: [],
     difficultyLevel: '',
     difficultyLevelList: ['Easy', 'Medium', 'Hard'],
+    questions: [],
     questionsAmount: null,
     maxQuestionsAmount: null,
     answers: {
@@ -31,6 +35,7 @@ export default {
     categories: ({ categories }) => categories,
     difficultyLevel: ({ difficultyLevel }) => difficultyLevel,
     difficultyLevelList: ({ difficultyLevelList }) => difficultyLevelList,
+    questions: ({ questions }) => questions,
     questionsAmount: ({ questionsAmount }) => questionsAmount,
     maxQuestionsAmount: ({ maxQuestionsAmount }) => maxQuestionsAmount,
     answersTotal: ({ answers: { correct, incorrect } }) => correct + incorrect,
@@ -51,6 +56,9 @@ export default {
     [SET_DIFFICULTY_LEVEL](state, payload) {
       state.difficultyLevel = payload
     },
+    [GET_QUESTIONS](state, payload) {
+      state.questions = payload
+    },
     [SET_QUESTIONS_AMOUNT](state, payload) {
       state.questionsAmount = payload
     },
@@ -66,55 +74,76 @@ export default {
   },
 
   actions: {
-    setQuizStarted({ commit }) {
-      commit(SET_QUIZ_STARTED)
+    startQuiz({ dispatch, commit }) {
+      return new Promise(resolve => {
+        dispatch('getQuestions').then(() => {
+          commit(SET_QUIZ_STARTED)
+          resolve()
+        })
+      })
     },
     setCategoryId({ commit }, payload) {
       commit(SET_CATEGORY_ID, payload)
     },
-    async getCategories({ commit }) {
+    getCategories({ commit }) {
       commit(SET_PROCESSING, true, { root: true })
 
-      try {
-        const categories = await (
-          await fetch(process.env.VUE_APP_QUIZ_CATEGORIES_URL)
-        ).json()
-
-        commit(GET_CATEGORIES, categories.trivia_categories)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        commit(SET_PROCESSING, false, { root: true })
-      }
+      return new Promise(resolve => {
+        return fetch(process.env.VUE_APP_QUIZ_CATEGORIES_URL)
+          .then(response => response.json())
+          .then(({ trivia_categories }) => {
+            commit(GET_CATEGORIES, trivia_categories)
+            resolve()
+          })
+          .finally(() => commit(SET_PROCESSING, false, { root: true }))
+      })
     },
     setDifficultyLevel({ commit }, payload) {
       commit(SET_DIFFICULTY_LEVEL, payload)
     },
+    getQuestions({ commit, getters }) {
+      commit(SET_PROCESSING, true, { root: true })
+
+      return new Promise(resolve => {
+        const url = replaceUrlParams(
+          process.env.VUE_APP_QUIZ_QUESTIONS_URL,
+          getters
+        )
+
+        return fetch(url)
+          .then(response => response.json())
+          .then(({ results: questions }) => {
+            commit(GET_QUESTIONS, questions)
+            resolve()
+          })
+          .finally(() => commit(SET_PROCESSING, false, { root: true }))
+      })
+    },
     setQuestionsAmount({ commit }, payload) {
       commit(SET_QUESTIONS_AMOUNT, payload)
     },
-    async getMaxQuestionsAmount({ commit, getters }) {
+    getMaxQuestionsAmount({ commit, getters }) {
       commit(SET_PROCESSING, true, { root: true })
 
-      try {
-        const { categoryId, difficultyLevel } = getters
-        const url =
-          process.env.VUE_APP_QUIZ_CATEGORY_QUESTIONS_COUNT_URL.replace(
-            'CATEGORY_ID',
-            categoryId
-          )
-        const data = await (await fetch(url)).json()
-        const questionsAmount =
-          data.category_question_count[
-            `total_${difficultyLevel.toLowerCase()}_question_count`
-          ]
+      return new Promise(resolve => {
+        const { difficultyLevel } = getters
+        const url = replaceUrlParams(
+          process.env.VUE_APP_QUIZ_CATEGORY_QUESTIONS_COUNT_URL,
+          getters
+        )
 
-        commit(GET_MAX_QUESTIONS_AMOUNT, questionsAmount)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        commit(SET_PROCESSING, false, { root: true })
-      }
+        return fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            const questionsAmount =
+              data.category_question_count[
+                `total_${difficultyLevel.toLowerCase()}_question_count`
+              ]
+            commit(GET_MAX_QUESTIONS_AMOUNT, questionsAmount)
+            resolve()
+          })
+          .finally(() => commit(SET_PROCESSING, false, { root: true }))
+      })
     }
   }
 }
