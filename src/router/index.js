@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '@/components/home.vue'
 import QuizForm from '@/components/quiz/form.vue'
 import QuizQuestionsList from '@/components/quiz/questions-list.vue'
+import NotFound from '@/components/not-found.vue'
 import store from '@/store'
 
 Vue.use(VueRouter)
@@ -17,6 +18,11 @@ const routes = [
     meta: {
       quizStarted: true
     }
+  },
+  {
+    path: '*',
+    name: 'not-found',
+    component: NotFound
   }
 ]
 
