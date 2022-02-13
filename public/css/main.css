@@ -19,7 +19,23 @@ body {
   padding: 0 2rem;
 }
 
+a {
+  font-size: 1.25rem;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
 /* helpers */
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
 .text-center {
   text-align: center;
 }

@@ -72,14 +72,16 @@ export default {
     }
   },
   created() {
-    this.getCategories()
+    if (!this.categories.length) {
+      this.getCategories()
+    }
   },
   computed: {
     ...mapGetters([
       'processing',
+      'step',
       'categoryId',
       'categories',
-      'questions',
       'difficultyLevel',
       'difficultyLevelList',
       'questionsAmount',
@@ -134,7 +136,9 @@ export default {
       }
     },
     onFormSubmit() {
-      this.startQuiz()
+      this.startQuiz().then(() => {
+        this.$router.push({ name: 'quiz-question', params: { questionId: this.step } })
+      })
     }
   }
 }
