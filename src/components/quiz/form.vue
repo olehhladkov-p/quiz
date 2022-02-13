@@ -72,7 +72,9 @@ export default {
     }
   },
   created() {
-    this.getCategories()
+    if (!this.categories.length) {
+      this.getCategories()
+    }
   },
   computed: {
     ...mapGetters([
@@ -135,7 +137,7 @@ export default {
     },
     onFormSubmit() {
       this.startQuiz().then(() => {
-        this.$router.push({ name: 'quiz-question', params: { id: this.step } })
+        this.$router.push({ name: 'quiz-question', params: { questionId: this.step } })
       })
     }
   }
