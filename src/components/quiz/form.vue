@@ -46,10 +46,10 @@
         </select>
 
         <input
-          v-model="questions"
+          v-model="questionsTotal"
           :disabled="processing || !difficulty"
           :max="maxQuestionsAmount"
-          name="questions_amount"
+          name="questions_total"
           placeholder="Select a number of questions"
           type="number"
           min="1"
@@ -72,12 +72,14 @@ export default {
     }
   },
   created() {
-    this.getCategories()
+    if (!this.categories.length) {
+      this.getCategories()
+    }
   },
   computed: {
     ...mapGetters([
       'processing',
-      'quizStarted',
+      'step',
       'categoryId',
       'categories',
       'difficultyLevel',
@@ -86,7 +88,7 @@ export default {
       'maxQuestionsAmount'
     ]),
     isFormDisabled() {
-      return !this.category || !this.difficulty || !this.questions
+      return !this.category || !this.difficulty || !this.questionsTotal
     },
     category: {
       get() {
@@ -104,7 +106,7 @@ export default {
         this.setDifficultyLevel(value)
       }
     },
-    questions: {
+    questionsTotal: {
       get() {
         return this.questionsAmount
       },
@@ -115,7 +117,7 @@ export default {
   },
   methods: {
     ...mapActions([
-      'setQuizStarted',
+      'startQuiz',
       'setCategoryId',
       'getCategories',
       'setDifficultyLevel',
@@ -128,13 +130,15 @@ export default {
       if (
         this.category &&
         this.difficulty &&
-        targetName !== 'questions_amount'
+        targetName !== 'questions_total'
       ) {
         this.getMaxQuestionsAmount()
       }
     },
     onFormSubmit() {
-      this.setQuizStarted()
+      this.startQuiz().then(() => {
+        this.$router.push({ name: 'quiz-question', params: { questionId: this.step } })
+      })
     }
   }
 }
