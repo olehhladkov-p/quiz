@@ -44,7 +44,16 @@ export default {
     questions: ({ questions }) => questions,
     questionsAmount: ({ questionsAmount }) => questionsAmount,
     maxQuestionsAmount: ({ maxQuestionsAmount }) => maxQuestionsAmount,
-    answers: ({ answers }) => answers
+    answers: ({ answers }) => answers,
+    correctAnswersAmount: ({ questions, answers }) => {
+      return questions.reduce((acc, item, index) => {
+        if (questions[index].correct_answer === answers[index]) {
+          acc = acc + 1
+        }
+
+        return acc
+      }, 0)
+    }
   },
 
   mutations: {
