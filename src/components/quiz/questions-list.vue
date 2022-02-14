@@ -4,7 +4,11 @@
     <h1 class="text-center" v-html="currentQuestion.question"></h1>
 
     <div class="quiz-item">
-      <div class="quiz-answers-list">
+      <div class="question-number">
+        {{ step }} / {{ questions.length }}
+      </div>
+
+      <div class="mb-1">
         <div
           v-for="answer in currentQuestion.answers"
           :key="answer"
@@ -71,6 +75,8 @@ export default {
     },
     onNextClick() {
       if (this.isLastStep) {
+        this.$router.push({ name: 'quiz-results' })
+
         return
       }
 
@@ -100,17 +106,24 @@ export default {
 </script>
 
 <style scoped>
-.quiz-answers-list {
-  margin-bottom: 1rem;
-}
-
 .quiz-item {
   position: relative;
   max-width: 30rem;
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem 3rem;
+  padding: 2.5rem 3rem 1.5rem;
   border-radius: 1rem;
   border: 1px solid #999;
+}
+
+.question-number {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 1rem;
+  border: 1px solid #999;
+  background-color: #eee;
 }
 </style>
